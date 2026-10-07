@@ -25,8 +25,7 @@ backups/
 *.sqlite3-wal
 *.sqlite3-shm
 *.log
-# Local editorial notes and the superseded one-off migration script.
-docs/内容审核建议.md
+# Local preview captures and the superseded one-off migration script.
 docs/preview-desktop.png
 docs/preview-mobile.png
 update_gallery.py
