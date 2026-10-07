@@ -1,0 +1,51 @@
+{% extends "base.html" %}{% from 'macros.html' import event_card with context %}
+{% block content %}
+  <section class="hero">
+    <div class="hero-kicker">
+      <span>SUZHOU, CHINA</span><span>BEBOP / HARD BOP / LATIN / FUSION...</span>
+    </div>
+    <h1>
+      SUZHOU
+      <br>
+      <span>QUINTET</span><span class="hero-period">.</span>
+    </h1>
+    <div class="hero-bottom">
+      <p>
+        五种声音。
+        <br>
+        在同一个现场相遇。
+      </p>
+      <a class="button yellow" href="{{ url_for('events') }}">查看演出 <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+  <section class="section">
+    <div class="section-title">
+      <h2>下一场 / NEXT LIVE</h2>
+      <a href="{{ url_for('events') }}">全部演出 ↗</a>
+    </div>
+    {% if upcoming %}{{ event_card(upcoming) }}{% else %}
+      <p class="empty">下一场演出正在筹备，时间确定后会在这里公布。</p>
+    {% endif %}
+  </section>
+  <section class="about section">
+    <p class="eyebrow">ABOUT THE BAND</p>
+    <h2>
+      从旋律出发，
+      <br>
+      在即兴中相遇。
+    </h2>
+    <p class="lead preline">{{ cfg.get('about', '') }}</p>
+    <a class="text-link" href="{{ url_for('members') }}">认识乐队成员 ↗</a>
+  </section>
+
+
+  {% if past %}
+    <section class="section">
+      <div class="section-title">
+        <h2>以往现场 / ARCHIVE</h2>
+        <a href="{{ url_for('archive') }}">全部回顾 ↗</a>
+      </div>
+      {% for e in past %}{{ event_card(e) }}{% endfor %}
+    </section>
+  {% endif %}
+{% endblock %}

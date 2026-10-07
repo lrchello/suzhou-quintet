@@ -1,0 +1,36 @@
+{% macro csrf() %}
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+{% endmacro %}
+{% macro event_card(e) %}
+  <article class="event-card">
+    {% if e.cover %}
+      <a href="{{ url_for('event_detail',event_id=e.id) }}"
+         tabindex="-1"
+         aria-hidden="true">
+        <img class="cover" src="{{ e.cover }}" alt="" loading="lazy">
+      </a>
+    {% endif %}
+    <div class="event-date">
+      {{ e.starts_at|when("%m.%d") }}<span>{{ e.starts_at|when("%Y") }}</span>
+    </div>
+    <div class="event-copy">
+      <p class="eyebrow">{{ e.venue }} / {{ e.starts_at|when("%H:%M") }}</p>
+      <h3>
+        <a href="{{ url_for('event_detail',event_id=e.id) }}">{{ e.title }}</a>
+      </h3>
+      <p>{{ e.address }}</p><span class="tag">{% if e.ends_at<=clock %}往期现场{% elif e.admission=="free" %}免票入场{% elif e.admission=="external" %}平台购票{% else %}¥{{ e.price_cents|money }}{% endif %}</span>
+    </div>
+  </article>
+{% endmacro %}
+{% macro field(name,label,value='',type='text',required=False) %}
+  <label>{{ label }}<input type="{{ type }}"
+       name="{{ name }}"
+       value="{{ request.form.get(name,value) }}"
+       {% if required %}required{% endif %}>
+  </label>
+{% endmacro %}
+{% macro area(name,label,value='',rows=4) %}
+  <label>
+    {{ label }}<textarea name="{{ name }}" rows="{{ rows }}">{{ request.form.get(name,value) }}</textarea>
+  </label>
+{% endmacro %}

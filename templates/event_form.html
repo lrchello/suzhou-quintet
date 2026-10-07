@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf,field,area with context %}
+{% block content %}
+  <section class="section narrow wide">
+    <h1>{{ '编辑演出' if e else '新增演出' }}</h1>
+    <p>所有日期使用北京时间。必填项目在浏览器提交时会提示。免费场次不显示购票表单。</p>
+    <form method="post" enctype="multipart/form-data">
+      {{ csrf() }}
+      {{ field('title','演出名称',e.title if e else '',required=True) }}
+      <div class="form-grid">{{ field('starts_at','开演时间',e.starts_at|local_input if e else '',type='datetime-local',required=True) }}{{ field('ends_at','归档 / 验票截止时间',e.ends_at|local_input if e else '',type='datetime-local',required=True) }}</div>
+      <p class="small">截止后演出进入往期列表，停止验票；该时间不作为公开的结束时间展示。请按实际演出安排设置。</p>
+      {{ field('venue','场地名称',e.venue if e else '',required=True) }}{{ field('address','详细地址',e.address if e else '',required=True) }}
+      {{ area('description','演出介绍',e.description if e else '') }}
+      {{ field('cover','海报地址（https 链接或已上传图片路径）',e.cover if e else '') }}<label>或上传海报（6 MB 内）<input name="cover_file"
+       type="file"
+       accept="image/png,image/jpeg,image/webp">
+      </label>
+      <fieldset>
+        <legend>本场阵容</legend>
+        {% for m in members %}
+          <label class="check"><input type="checkbox"
+       name="member_ids"
+       value="{{ m.id }}"
+       {% if (request.method=='POST' and m.id|string in request.form.getlist('member_ids')) or (request.method!='POST' and m.id in selected) %}checked{% endif %}>{{ m.name }} · {{ m.instrument }}{{ '（隐藏，不在前台显示）' if not m.published else '' }}</label>
+        {% endfor %}
+      </fieldset>
+      <label>入场方式<select name="admission">{% for val,label in [('free','免票入场'),('paid','本站收费售票'),('external','外部平台售票')] %}<option value="{{ val }}"
+        {% if request.form.get('admission',e.admission if e else 'free')==val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      </label>
+      <div class="form-grid">{{ field('price','单张票价（元；免费填 0）',(e.price_cents/100) if e else 0,required=True) }}{{ field('capacity','可售容量（免费填 0）',e.capacity if e else 0,type='number',required=True) }}</div>
+      {{ field('sales_end','停止售票时间（免费可设为开演时间）',e.sales_end|local_input if e else '',type='datetime-local',required=True) }}
+      {{ field('external_url','外部售票链接（仅外部售票必填）',e.external_url if e else '') }}
+      {{ area('refund_policy','购票、退票须知（收费必填，明确人工确认及退票截止时间）',e.refund_policy if e else '') }}
+      <h2>往期回顾</h2>{{ area('recap','现场回顾（归档后显示）',e.recap if e else '') }}{{ area('setlist','精选曲目',e.setlist if e else '') }}{% include "gallery_editor.html" %}{{ field('video_url','现场视频链接（https）',e.video_url if e else '') }}
+      <fieldset>
+        <legend>发布选项</legend>
+        {% for name,label in [('published','公开发布'),('sales_open','开启售票（仍受售票截止、库存和收款配置限制）'),('is_test','内部测试场次（仅管理员可见，不收款）')] %}
+          <label class="check"><input type="checkbox"
+       name="{{ name }}"
+       {% if (request.form.get(name) if request.method=='POST' else (e[name] if e else False)) %}checked{% endif %}>{{ label }}</label>
+        {% endfor %}
+      </fieldset>
+      <p class="small">已有订单后不可改变入场方式和测试属性；修改时间、场地或取消演出时，请另行联系已购票观众。隐藏演出不会自动退款。</p>
+      <button class="button yellow">保存演出</button>
+      <a href="{{ url_for('admin_home') }}">返回后台</a>
+    </form>
+  </section>
+{% endblock %}

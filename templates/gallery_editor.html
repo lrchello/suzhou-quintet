@@ -1,0 +1,52 @@
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='gallery-editor.css') }}">
+<script src="{{ url_for('static', filename='gallery-editor.js') }}" defer></script>
+<section class="photo-editor"
+         data-photo-editor
+         data-request-limit="{{ config.MAX_CONTENT_LENGTH or 0 }}">
+  <h3>现场照片</h3>
+  <p class="small">直接选择照片，点击页面底部“保存演出”后生效。新照片会追加在保留的原有照片之后。</p>
+  <input type="hidden" name="gallery_editor" value="1">
+  {% set originals = e.gallery.splitlines() if e and e.gallery else [] %}
+  {% if originals %}
+    <p>
+      <strong>已有照片</strong>
+    </p>
+    <div class="photo-grid">
+      {% for photo in originals if photo %}
+        <article class="photo-card" data-existing-photo>
+          <a href="{{ photo }}" target="_blank" rel="noopener noreferrer">
+            <img src="{{ photo }}" alt="现场照片 {{ loop.index }}" loading="lazy">
+          </a>
+          <label class="check"><input type="checkbox"
+       name="keep_gallery"
+       value="{{ photo }}"
+       {% if request.method != 'POST' or request.form.get('gallery_editor') != '1' or photo in request.form.getlist('keep_gallery') %}checked{% endif %}>保留这张照片</label>
+          <span class="photo-remove-note small" hidden>保存后将从本场回顾中移除。重新勾选可以恢复。</span>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <label for="gallery-files">添加现场照片（可多选）</label>
+  <input id="gallery-files"
+         name="gallery_files"
+         type="file"
+         accept="image/jpeg,image/png,image/webp"
+         multiple
+         data-photo-input>
+  <p class="small">支持 JPG、PNG、WebP；每次最多新增 20 张。{% if config.MAX_CONTENT_LENGTH %}本次提交总上限 {{ (config.MAX_CONTENT_LENGTH / 1024 / 1024)|round(1) }} MB，包含海报、所有新照片和表单内容。{% endif %}每张照片最多两千万像素。</p>
+  <p class="small" data-photo-message role="status" aria-live="polite">尚未选择新照片。</p>
+  <div class="photo-grid" data-photo-previews></div>
+  <noscript>
+    <p>可以一次多选后直接保存；更改选择请重新打开文件选择框。</p>
+  </noscript>
+  <details>
+    <summary>使用已有图片链接（可选）</summary>
+    <label>
+      新增图片地址，每行一张<textarea name="gallery_links"
+          rows="3"
+          maxlength="10000">{{ request.form.get('gallery_links', '') }}</textarea>
+    </label>
+  </details>
+  <p class="small">取消勾选只会从本场回顾中移除引用，不会删除其他演出共用的图片。</p>
+</section>

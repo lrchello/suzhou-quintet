@@ -1,0 +1,23 @@
+# Adapt paths and create the unprivileged sq account before installation.
+[Unit]
+Description=Suzhou Quintet website
+After=network.target
+
+[Service]
+Type=simple
+User=sq
+Group=sq
+WorkingDirectory=/opt/suzhou-quintet
+EnvironmentFile=/etc/suzhou-quintet.env
+ExecStart=/opt/suzhou-quintet/.venv/bin/python serve.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/suzhou-quintet
+
+[Install]
+WantedBy=multi-user.target

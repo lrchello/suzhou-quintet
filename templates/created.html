@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="section narrow">
+    <p class="eyebrow">ORDER CREATED</p>
+    <h1>订单已创建</h1>
+    <p>请先保存以下信息，再进入付款页面。查询密钥仅在这里显示一次；它和订单号一起用于换设备找回票券。</p>
+    <div class="panel">
+      <p>订单号</p>
+      <code>{{ order.public_id }}</code>
+      <p>查询密钥（请勿分享）</p>
+      <code>{{ recovery }}</code>
+    </div>
+    <p class="small">请截图或复制到你自己的备忘录。工作人员不会要求你公开发布密钥。</p>
+    <button class="button outline" data-print>打印 / 保存本页</button>
+    <a class="button yellow"
+       href="{{ url_for('order_detail',public_id=order.public_id) }}">已保存，查看订单</a>
+  </section>
+{% endblock %}

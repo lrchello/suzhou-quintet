@@ -1,0 +1,7 @@
+-r requirements.txt
+pytest==9.1.1
+ruff==0.16.10
+pip-audit==2.10.1
+djlint==1.46.4
+cssbeautifier==2.0.3
+jsbeautifier==2.0.3

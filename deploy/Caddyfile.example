@@ -1,0 +1,14 @@
+# Set SQ_DOMAIN to the exact public hostname. Run Caddy on the same host.
+# PROXY_HOPS=1 is valid only for this direct client -> Caddy -> Waitress chain.
+{$SQ_DOMAIN} {
+    encode zstd gzip
+    request_body {
+        max_size 20MB
+    }
+    reverse_proxy 127.0.0.1:8000 {
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto https
+        header_up -X-Forwarded-Host
+        header_up -X-Forwarded-Prefix
+    }
+}

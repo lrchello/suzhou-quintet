@@ -1,0 +1,22 @@
+.venv/
+instance/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+.env.*
+!.env.example
+.ruff_cache/
+.test-tmp/
+maintenance-backups/
+gallery-update-backups/
+backups/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.log
+# Local editorial notes and the superseded one-off migration script.
+docs/内容审核建议.md
+docs/preview-desktop.png
+docs/preview-mobile.png
+update_gallery.py

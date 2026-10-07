@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf with context %}
+{% block content %}
+  <section class="section narrow">
+    <p class="eyebrow">YOUR TICKETS</p>
+    <h1 class="page-title">
+      找回票券<span class="accent">.</span>
+    </h1>
+    <p>输入下单时保存的订单号和查询密钥。</p>
+    <form method="post">
+      {{ csrf() }}
+      <label>
+        订单号<input name="public_id" maxlength="30" autocomplete="off" required>
+      </label>
+      <label>
+        查询密钥<input name="access_key"
+       type="password"
+       maxlength="200"
+       autocomplete="off"
+       required>
+      </label>
+      <button class="button yellow">查询订单</button>
+    </form>
+    {% if cfg.get("contact") %}
+      <p class="small">遗失查询密钥？请联系 {{ cfg.contact }}，由工作人员核对订单信息协助处理。</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf with context %}
+{% block title %}订单 {{ o.public_id }} · SUZHOU QUINTET{% endblock %}
+{% block content %}
+  <section class="section narrow">
+    {% if o.is_test %}
+      <p class="notice">内部测试订单 · 不要真实付款</p>
+    {% endif %}
+    <p class="eyebrow">ORDER / {{ o.public_id }}</p>
+    <h1>{{ status_labels[o.status] }}</h1>
+    <h2>{{ o.title }}</h2>
+    <p>{{ o.starts_at|when }} · {{ o.venue }}</p>
+    <p>{{ o.address }}</p>
+    <div class="panel">
+      <p>{{ o.quantity }} 张 × ¥{{ o.unit_cents|money }}</p>
+      <p class="total">合计 ¥{{ (o.quantity*o.unit_cents)|money }}</p>
+      <p>{{ o.buyer }} · {{ o.contact }}</p>
+    </div>
+    {% if o.status=="pending" %}
+      <h2>{{ '模拟付款' if o.is_test else '付款方式' }}</h2>
+      <p>请在 <strong>{{ o.expires_at|when }}</strong> 前完成付款并提交付款信息。</p>
+      {% if not o.is_test %}
+        {% if o.payment_image_snapshot %}
+          <img class="payment-qr" src="{{ o.payment_image_snapshot }}" alt="个人收款码">
+          <p>
+            收款人：<strong>{{ o.payee_snapshot }}</strong>
+          </p>
+          <p>支付金额：¥{{ (o.quantity*o.unit_cents)|money }}。请核对收款人，并在付款备注填写订单号 {{ o.public_id }}。</p>
+          <p class="small">手机浏览器中可长按保存收款码，再在支付应用中从相册识别。完成付款后返回本页提交信息。</p>
+        {% else %}
+          <p class="notice">收款信息暂不可用，请联系工作人员，不要自行转账。</p>
+        {% endif %}
+      {% else %}
+        <p>此订单不收款。在下方填写“测试付款”即可验证后续流程。</p>
+      {% endif %}
+    {% elif o.status=="review" %}
+      <p class="notice">已收到付款信息，等待工作人员核对。请勿重复付款。人工核对窗口截至 {{ o.review_until|when }}；超时后转为人工处理。</p>
+      <a class="button outline"
+         href="{{ url_for('order_detail',public_id=o.public_id) }}">刷新订单状态</a>
+    {% elif o.status=="expired" %}
+      <p class="notice">保留名额已释放，请勿继续付款。如果已付款，请提交付款时间与交易单号，工作人员将核对余票后出票或退款。</p>
+    {% elif o.status=="refunded" %}
+      <p>退款已由工作人员记录，原票券已失效。退款凭据：{{ o.refund_ref }}</p>
+    {% elif o.status=="cancelled" %}
+      <p>订单已取消，不要继续付款。已经付款但未处理的情况，请联系工作人员。</p>
+    {% endif %}
+    {% if o.status in ["pending","review","expired"] %}
+      <form method="post"
+            action="{{ url_for('payment_report',public_id=o.public_id) }}">
+        {{ csrf() }}
+        <label>
+          付款信息（付款时间、交易单号；测试场次填写测试说明）<textarea name="payment_note"
+          maxlength="300"
+          required>{{ o.payment_note }}</textarea>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="paid" required>{{ '我确认这是测试订单，没有真实付款' if o.is_test else '我已实际付款，了解提交信息后仍需人工核对' }}</label><button class="button yellow">提交付款信息</button>
+      </form>
+    {% endif %}
+    {% if o.status=="paid" %}
+      <h2>电子票</h2>
+      <p>一人一票；入场时向工作人员出示。请勿公开票码。</p>
+      <div class="tickets">
+        {% for t in tickets %}
+          <article class="ticket">
+            <p class="eyebrow">{{ loop.index }} / {{ o.quantity }} {% if o.is_test %}· TEST{% endif %}</p>
+            <h3>{{ '已核销' if t.used_at else '待入场' }}</h3><img src="{{ url_for('ticket_qr',public_id=o.public_id,ticket_id=t.id) }}"
+     alt="电子票二维码 {{ loop.index }}"><code>{{ t.code }}</code>{% if t.used_at %}
+            <p>核销时间 {{ t.used_at|when }}</p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div><button class="button outline" data-print>打印 / 保存票券</button>{% endif %}
+<details>
+  <summary>下单时的购票与退票须知</summary>
+  <p class="preline">{{ o.policy_snapshot }}</p>
+</details>
+{% if cfg.get("contact") %}
+  <p>购票协助：{{ cfg.contact }}</p>
+{% endif %}
+<form method="post" action="{{ url_for('new_checkout') }}">
+  {{ csrf() }}<button class="text-button">创建另一笔订单</button>
+</form>
+{% if admin %}
+  <section class="admin-actions panel">
+    <h2>工作人员处理</h2>
+    <p>付款信息：{{ o.payment_note or '未提交' }}</p>
+    <p>到账交易单号：{{ o.receipt_ref or '尚未确认' }}</p>
+    {% if o.status in ["review","expired"] and o.reported_at %}
+      <form method="post"
+            action="{{ url_for('order_action',order_id=o.id,action='confirm') }}">
+        {{ csrf() }}<label>实际到账交易单号（不可重复使用）<input name="reference" maxlength="120" required>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="verified" required>已在收款应用核对本单实际到账 ¥{{ (o.quantity*o.unit_cents)|money }}；非仅依据截图</label><button class="button yellow">确认到账并出票</button>
+      </form>
+    {% endif %}
+    {% if o.status in ["pending","review","expired"] %}
+      <form method="post"
+            action="{{ url_for('order_action',order_id=o.id,action='cancel') }}">
+        {{ csrf() }}<label class="check"><input type="checkbox" name="verified" required>已核对：未收到本单款项，可以取消</label><button class="button outline">取消订单并释放名额</button>
+      </form>
+    {% endif %}
+    {% if o.status in ["paid","expired","review"] %}
+      <form method="post"
+            action="{{ url_for('order_action',order_id=o.id,action='refund') }}">
+        {{ csrf() }}<label>实际退款凭据 / 退款交易单号<input name="reference" maxlength="120" required>
+        </label>
+        <label class="check">
+          <input type="checkbox"
+                 name="verified"
+                 required>已在线下完成本单全额退款</label><button class="button outline">记录退款并作废票券</button>
+      </form>
+    {% endif %}
+  </section>
+{% endif %}
+</section>
+{% endblock %}

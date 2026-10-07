@@ -1,0 +1,75 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf with context %}
+{% block content %}
+  <section class="section">
+    <p class="eyebrow">BACKSTAGE</p>
+    <h1 class="page-title">
+      管理后台<span class="accent">.</span>
+    </h1>
+    {% if not cfg.get("contact") or not cfg.get("payment_image") or not cfg.get("payee") %}
+      <div class="notice">正式售票尚未就绪。请在<a href="{{ url_for('edit_settings') }}">网站设置</a>中填写合作／购票协助联系方式、收款人和收款码。免费演出不受影响。</div>
+    {% endif %}
+    <div class="section-title">
+      <h2>演出与销售</h2>
+      <a class="button yellow" href="{{ url_for('edit_event') }}">新增演出</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>演出</th>
+            <th>状态</th>
+            <th>已出票</th>
+            <th>待核对订单</th>
+            <th>已核销</th>
+            <th>管理</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in events %}
+            <tr>
+              <td>
+                <strong>{{ e.title }}</strong>
+                <br>
+                {{ e.starts_at|when }}
+              </td>
+              <td>
+                {{ '内部测试' if e.is_test else ('已发布' if e.published else '草稿') }}
+                <br>
+                {{ {'free':'免票','paid':'收费','external':'外部售票'}[e.admission] }}
+              </td>
+              <td>{{ e.sold }} 张</td>
+              <td>{{ e.reviewing }} 笔</td>
+              <td>{{ e.used }} 张</td>
+              <td class="row-actions">
+                <a href="{{ url_for('edit_event',event_id=e.id) }}">编辑</a><a href="{{ url_for('event_detail',event_id=e.id) }}">预览</a><a href="{{ url_for('admin_orders',event_id=e.id) }}">订单</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="section-title">
+      <h2>成员</h2>
+      <a class="button outline" href="{{ url_for('edit_member') }}">新增成员</a>
+    </div>
+    <ul class="lineup">
+      {% for m in members %}
+        <li>
+          <strong>{{ m.name }} · {{ m.instrument }}</strong><span>{{ '公开' if m.published else '隐藏' }} <a href="{{ url_for('edit_member',member_id=m.id) }}">编辑</a></span>
+        </li>
+      {% endfor %}
+    </ul>
+    <section class="panel">
+      <h2>维护现场照片</h2>
+      <p>在对应演出的“编辑”页面维护现场照片，可一次新增多张、预览选择，并勾选保留原有照片。每张图片最多 6 MB，一次提交的全部文件与表单最多 20 MB。</p>
+    </section>
+    <details>
+      <summary>最近 20 条管理操作记录</summary>
+      <ul>
+        {% for log in logs %}
+          <li>{{ log.created_at|when }} · {{ log.username }} · {{ log.action }} · #{{ log.object_id or '—' }}</li>
+        {% endfor %}
+      </ul>
+    </details>
+  </section>
+{% endblock %}

@@ -1,0 +1,91 @@
+.photo-editor {
+  margin: 28px 0;
+  padding: 22px 0;
+  border-top: 1px solid var(--line, #ccc);
+  border-bottom: 1px solid var(--line, #ccc)
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+  gap: 16px;
+  margin: 20px 0
+}
+
+.photo-card {
+  min-width: 0;
+  border: 1px solid var(--line, #ccc);
+  padding: 12px;
+  background: var(--white, #fff)
+}
+
+.photo-card img {
+  display: block;
+  width: 100%;
+  height: 170px;
+  object-fit: contain;
+  background: #e8e8e8
+}
+
+.photo-card .check {
+  margin: 12px 0 0;
+  font-size: 1rem
+}
+
+.photo-card .photo-name {
+  font-size: .875rem;
+  overflow-wrap: anywhere;
+  margin: 10px 0 8px
+}
+
+.photo-card .photo-remove {
+  width: 100%;
+  padding: 8px 12px;
+  font: inherit;
+  background: transparent;
+  border: 1px solid var(--ink, #111);
+  color: var(--ink, #111);
+  cursor: pointer;
+  min-height: 44px
+}
+
+.photo-card.is-removed img {
+  opacity: .35
+}
+
+.photo-card.is-removed {
+  border-style: dashed
+}
+
+.photo-remove-note {
+  display: block;
+  margin-top: 8px
+}
+
+.photo-remove-note[hidden] {
+  display: none
+}
+
+.photo-editor [data-photo-message].is-error {
+  color: #9a240a;
+  font-weight: 700
+}
+
+.photo-editor input[type=file] {
+  max-width: 100%
+}
+
+@media(max-width:480px) {
+  .photo-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px
+  }
+
+  .photo-card {
+    padding: 8px
+  }
+
+  .photo-card img {
+    height: 130px
+  }
+}

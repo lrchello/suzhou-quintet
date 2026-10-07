@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf,field,area with context %}
+{% block content %}
+  <section class="section narrow">
+    <h1>网站设置</h1>
+    <form method="post" enctype="multipart/form-data">
+      {{ csrf() }}
+      {{ area('about','乐队介绍',cfg.get('about','')) }}{{ field('contact','公开的合作 / 购票协助联系方式',cfg.get('contact','')) }}{{ field('payee','收款人显示名称（与支付应用一致）',cfg.get('payee','')) }}
+      <label>
+        上传个人收款码<input name="payment_file"
+       type="file"
+       accept="image/png,image/jpeg,image/webp">
+      </label>
+      {% if cfg.get("payment_image") %}
+        <img class="payment-qr" src="{{ cfg.payment_image }}" alt="当前收款码">
+      {% endif %}
+      <p class="small">没有配置联系方式、收款人及收款码时，正式收费演出不能下单。后台确认出票仅记录你核对的结果，不会自动查询或转移资金。</p>
+      <button class="button yellow">保存设置</button>
+    </form>
+  </section>
+{% endblock %}

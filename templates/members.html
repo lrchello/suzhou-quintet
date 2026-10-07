@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}成员 · SUZHOU QUINTET{% endblock %}
+{% block content %}
+  <section class="section">
+    <p class="eyebrow">THE PLAYERS</p>
+    <h1 class="page-title">
+      乐队成员<span class="accent">.</span>
+    </h1>
+    <div class="member-grid">
+      {% for m in members %}
+        <article class="member">
+          {% if m.image %}<img src="{{ m.image }}" alt="{{ m.name }}" loading="lazy">{% endif %}
+          <p class="eyebrow">{{ m.instrument }}</p>
+          <h2>{{ m.name }}</h2>
+          {% if m.bio %}
+            <p class="preline">{{ m.bio }}</p>
+          {% endif %}
+        </article>
+      {% else %}
+        <p class="empty">成员介绍即将更新。</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

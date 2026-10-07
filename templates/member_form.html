@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf,field,area with context %}
+{% block content %}
+  <section class="section narrow">
+    <h1>{{ '编辑成员' if m else '新增成员' }}</h1>
+    <form method="post" enctype="multipart/form-data">
+      {{ csrf() }}
+      {{ field('name','姓名',m.name if m else '',required=True) }}{{ field('instrument','乐器（如 Trumpet）',m.instrument if m else '',required=True) }}{{ area('bio','个人介绍',m.bio if m else '') }}{{ field('image','照片地址（或使用下方上传）',m.image if m else '') }}<label>上传照片<input name="image_file"
+       type="file"
+       accept="image/png,image/jpeg,image/webp">
+      </label>
+      {{ field('sort_order','排列顺序（数字较小排前面）',m.sort_order if m else 0,type='number',required=True) }}
+      <label class="check"><input name="published"
+       type="checkbox"
+       {% if (request.form.get('published') if request.method=='POST' else (m.published if m else False)) %}checked{% endif %}>公开显示</label><button class="button yellow">保存成员</button>
+    </form>
+  </section>
+{% endblock %}

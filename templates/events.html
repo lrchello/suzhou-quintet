@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% from 'macros.html' import event_card with context %}
+{% block title %}{{ '往期现场' if past else '演出信息' }} · SUZHOU QUINTET{% endblock %}
+{% block content %}
+  <section class="section">
+    <p class="eyebrow">{{ 'THE ARCHIVE' if past else 'LIVE DATES' }}</p>
+    <h1 class="page-title">
+      {{ '往期现场' if past else '演出信息' }}<span class="accent">.</span>
+    </h1>
+    {% for e in events %}{{ event_card(e) }}{% else %}
+      <p class="empty">{{ '现场回顾正在整理，敬请期待。' if past else '下一场演出正在筹备，敬请期待。' }}</p>
+    {% endfor %}
+  </section>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="section">
+    <p class="eyebrow">ORDERS</p>
+    <h1>订单管理</h1>
+    <form class="filters" method="get">
+      <label>订单状态<select name="status"><option value="">全部</option>{% for key,label in status_labels.items() %}<option value="{{ key }}"
+        {% if request.args.get('status')==key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      </label>
+      {% if request.args.get("event_id") %}<input type="hidden" name="event_id" value="{{ request.args.event_id }}">{% endif %}<button class="button outline">筛选</button><a href="{{ url_for('admin_orders') }}">清除筛选</a>
+    </form>
+    <p class="small">共 {{ total }} 笔匹配订单 · 第 {{ page }} / {{ pages }} 页 · 每页最多 50 笔</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>订单</th>
+            <th>演出 / 观众</th>
+            <th>数量 / 金额</th>
+            <th>状态</th>
+            <th>提交时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+            <tr>
+              <td>
+                <a href="{{ url_for('order_detail',public_id=o.public_id) }}">{{ o.public_id }}</a>
+              </td>
+              <td>{{ o.title }}{% if o.is_test %}（测试）{% endif %}<br>{{ o.buyer }}</td>
+              <td>{{ o.quantity }} 张 / ¥{{ (o.unit_cents*o.quantity)|money }}</td>
+              <td>{{ status_labels[o.status] }}{% if o.status=="expired" and o.reported_at %}<br><strong>已报付款，需处理</strong>{% endif %}
+              </td>
+              <td>{{ o.created_at|when }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5">暂无匹配订单。</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <nav class="pagination" aria-label="订单分页">{% if previous %}<a class="button outline" href="{{ previous }}">上一页</a>{% endif %}{% if following %}<a class="button outline" href="{{ following }}">下一页</a>{% endif %}
+    </nav>
+  </section>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf with context %}
+{% block content %}
+  <section class="section narrow">
+    <p class="eyebrow">AT THE DOOR</p>
+    <h1>现场验票</h1>
+    <p>使用扫码枪输入票码，或用手机扫码后复制票码到这里。先查询票券，再确认核销；仅查看不会消耗票券。</p>
+    <form method="get">
+      <label>
+        票码<input name="code"
+       value="{{ code }}"
+       maxlength="100"
+       autocomplete="off"
+       required>
+      </label>
+      <button class="button outline">查询票券</button>
+    </form>
+    {% if ticket %}
+      <article class="panel">
+        <h2>{{ ticket.title }}</h2>
+        {% if ticket.is_test %}
+          <p class="tag">内部测试</p>
+        {% endif %}
+        <p>{{ ticket.starts_at|when }} · {{ ticket.buyer }}</p>
+        <p>订单：{{ status_labels[ticket.status] }}</p>
+        <p>
+          验票：<strong>{{ '已核销' if ticket.used_at else '未核销' }}</strong>
+        </p>
+        {% if ticket.used_at %}
+          <p>{{ ticket.used_at|when }}</p>
+          {% endif %}<code>{{ ticket.code }}</code>
+          {% if not ticket.used_at and ticket.status=="paid" %}
+            <form method="post">
+              {{ csrf() }}<input type="hidden"
+       name="code"
+       value="{{ ticket.code }}"><button class="button yellow">确认核销并放行</button>
+            </form>
+          {% endif %}
+          </article>
+        {% elif code %}
+          <p class="notice error">未找到此票码，请检查输入。</p>
+        {% endif %}
+        <p class="small">核销时间范围：开演前两小时至本场设置的验票截止时间。</p>
+      </section>
+    {% endblock %}

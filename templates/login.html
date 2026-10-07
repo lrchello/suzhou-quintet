@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf with context %}
+{% block content %}
+  <section class="section narrow">
+    <p class="eyebrow">STAFF ACCESS</p>
+    <h1>工作人员登录</h1>
+    <form method="post">
+      {{ csrf() }}<label>用户名<input name="username" maxlength="80" autocomplete="username" required>
+      </label>
+      <label>
+        密码<input name="password"
+       type="password"
+       maxlength="300"
+       autocomplete="current-password"
+       required>
+      </label>
+      <button class="button yellow">登录</button>
+    </form>
+  </section>
+{% endblock %}

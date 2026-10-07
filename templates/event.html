@@ -1,0 +1,127 @@
+{% extends "base.html" %}{% from 'macros.html' import csrf with context %}
+{% block title %}{{ e.title }} · SUZHOU QUINTET{% endblock %}
+{% block content %}
+  <section class="section">
+    {% if e.is_test %}
+      <p class="notice">内部测试场次 · 仅管理员可见 · 请勿真实付款</p>
+    {% elif not e.published %}
+      <p class="notice">未发布预览 · 仅管理员可见</p>
+    {% endif %}
+    <a class="text-link" href="{{ url_for('events') }}">← 演出列表</a>
+    <p class="eyebrow">{{ e.starts_at|when("%Y.%m.%d") }} / {{ e.venue }}</p>
+    <h1 class="detail-title">{{ e.title }}</h1>
+    <div class="detail-grid">
+      <div>
+        {% if e.cover %}<img class="poster" src="{{ e.cover }}" alt="{{ e.title }} 演出海报">{% endif %}
+        <h2>关于这场演出</h2>
+        <p class="preline lead">{{ e.description }}</p>
+        {% if lineup %}
+          <h2>演出阵容</h2>
+          <ul class="lineup">
+            {% for m in lineup %}
+              <li>
+                <strong>{{ m.name }}</strong><span>{{ m.instrument }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if e.ends_at<=clock %}
+          <h2>现场回顾</h2>
+
+          {% if e.recap|trim %}
+            <p class="preline">{{ e.recap }}</p>
+          {% elif not (e.gallery|trim)
+            and not (e.video_url|trim)
+            and not (e.setlist|trim) %}
+            <p>这场演出的回顾正在整理。</p>
+          {% endif %}
+          {% if e.setlist %}
+            <h3>精选曲目</h3>
+            <p class="preline">{{ e.setlist }}</p>
+          {% endif %}
+          <div class="gallery">
+            {% for photo in e.gallery.splitlines() if photo %}
+              <a href="{{ photo }}" target="_blank" rel="noopener noreferrer">
+                <img src="{{ photo }}"
+                     alt="{{ e.title }} 现场照片 {{ loop.index }}"
+                     loading="lazy">
+              </a>
+            {% endfor %}
+          </div>
+          {% if e.video_url %}<a class="button"
+   href="{{ e.video_url }}"
+   target="_blank"
+   rel="noopener noreferrer">观看现场视频 ↗</a>{% endif %}
+        {% endif %}
+      </div>
+      <aside class="booking">
+        <p class="eyebrow">LIVE INFORMATION</p>
+        <h2>{{ e.starts_at|when("%m 月 %d 日") }}</h2>
+        <p class="time">
+          {{ e.starts_at|when("%H:%M") }} <small>北京时间</small>
+        </p>
+        <strong>{{ e.venue }}</strong>
+        <p>{{ e.address }}</p>
+        <div class="stack">
+          <a href="{{ map_link(e) }}"
+             target="_blank"
+             rel="noopener noreferrer">打开地图导航 ↗</a><a href="{{ url_for('calendar',event_id=e.id) }}">添加到日历 ↓</a>
+        </div>
+        <hr>
+        {% if e.ends_at<=clock %}
+          <p class="tag">演出已结束</p>
+        {% elif e.admission=="free" %}
+          <h3>免票入场</h3>
+          <p>无需在本站购票。</p>
+        {% elif e.admission=="external" %}<a class="button yellow"
+   href="{{ e.external_url }}"
+   target="_blank"
+   rel="noopener noreferrer">前往平台购票 ↗</a>
+          <p class="small">付款、票券与退款由对应票务平台处理。</p>
+        {% else %}
+          <h3>
+            ¥{{ e.price_cents|money }} <small>/ 张</small>
+          </h3>
+          <p>余票 {{ remaining(e) }} 张 · 每单最多 6 张</p>
+          <p class="small">停止售票：{{ e.sales_end|when }}</p>
+          <details open>
+            <summary>购票与退票须知</summary>
+            <p class="preline">{{ e.refund_policy }}</p>
+          </details>
+          {% set reason = sale_reason(e,admin) %}
+          {% if reason %}
+            <p class="notice">{{ reason }}</p>
+          {% else %}
+            <p class="small">下单后保留名额 20 分钟（最迟至停止售票）。付款后须提交付款信息，由工作人员核对到账后出票。</p>
+            <form method="post"
+                  action="{{ url_for('checkout',event_id=e.id) }}"
+                  data-checkout
+                  data-price="{{ e.price_cents }}">
+              {{ csrf() }}
+              <input type="hidden" name="request_key" value="{{ checkout_key }}">
+              <label>
+                称呼<input name="buyer" maxlength="60" autocomplete="name" required>
+              </label>
+              <label>
+                联系方式（微信 / 手机 / 邮箱）<input name="contact"
+       maxlength="120"
+       required><span class="small">仅用于订单协助，不公开展示。</span>
+              </label>
+              <label>数量<select name="quantity">{% for n in range(1,[6,remaining(e)]|min+1) %}<option value="{{ n }}">{{ n }} 张</option>{% endfor %}</select>
+              </label>
+              <p>
+                合计：<strong data-total>¥{{ e.price_cents|money }}</strong>
+              </p>
+              <label class="check">
+                <input type="checkbox" name="agree" required><span>我已阅读购票及退票须知与<a href="{{ url_for('privacy') }}"
+   target="_blank"
+   rel="noopener">隐私说明</a>并同意提交本单信息</span>
+              </label>
+              <button class="button yellow">{{ '创建测试订单（无需付款）' if e.is_test else '提交订单' }}</button>
+            </form>
+          {% endif %}
+        {% endif %}
+      </aside>
+    </div>
+  </section>
+{% endblock %}

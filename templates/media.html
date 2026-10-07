@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="section narrow">
+    <h1>图片已上传</h1>
+    <p>复制以下路径到演出编辑页的现场照片列表中。</p>
+    <code>{{ path }}</code><img class="poster"
+     src="{{ path }}"
+     alt="刚上传的图片"><a class="button yellow"
+   href="{{ url_for('admin_home') }}">返回管理后台</a>
+  </section>
+{% endblock %}
