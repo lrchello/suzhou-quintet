@@ -6,6 +6,16 @@ __pycache__/
 .env
 .env.*
 !.env.example
+# Private credentials and signing keys.
+secrets/
+credentials/
+credentials.json
+service-account*.json
+*.key
+*.pem
+*.p12
+*.pfx
+*.keystore
 .ruff_cache/
 .test-tmp/
 maintenance-backups/
